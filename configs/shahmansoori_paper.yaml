@@ -1,0 +1,48 @@
+# Shahmansoori et al., IEEE TWC 2018, Sec. V-A. Main configuration for all experiments.
+# Values marked [DESIGN] are not specified by the paper; see docs/P0_specification.md (F4, F6, F7, F8).
+name: shahmansoori_paper
+
+physics:
+  speed_of_light: 299792000.0     # c = 0.299792 m/ns
+  fc: 60.0e+9
+  bandwidth: 100.0e+6
+  num_subcarriers: 20
+  frequency_dependent_array: true # Eq. (5), lambda_n = c/(n/(N Ts) + fc)
+
+array:
+  num_tx: 65
+  num_rx: 65
+  spacing_wavelengths: 0.5        # d = lambda_c / 2
+  index_origin: centered          # Eq. (5)
+
+beam:
+  num_beams: 32                   # G
+  num_streams: 1                  # Mt
+  analog_frequency_flat: true     # [DESIGN] F_RF is analog -> same for all subcarriers
+  normalize: true                 # ||F_RF F_BB[n]||_F = 1
+  symbols: random_phase           # x~ = exp(j phi_{g,n}), phi uniform on [0, 2pi)
+
+channel:
+  gain_model: pathloss            # Eqs. (66)-(67)
+  gain_phase: random              # [DESIGN] h_k = exp(j psi_k)
+  reflection_loss_db_mean: -10.0  # sigma_0^2
+  reflection_loss_db_std: 4.0     # RMS 4 dB
+  reflection_loss_random: true
+  atmospheric_attenuation_db_per_km: 16.0
+  poisson_density: 0.14285714285714285   # gamma_r = 1/7
+
+scenario:
+  dimension: 2
+  bs_position: [0.0, 0.0]
+  condition: los
+  ue_position: {mode: fixed, value: [4.0, 0.0]}
+  orientation: {mode: fixed, value: 0.1}
+  scatterers: {mode: none}
+
+noise:
+  mode: target_snr                # Eq. (68)
+  snr_db: 0.0
+
+# Estimator settings live in configs/estimators/ (F25). Default: strong classical baseline.
+# Select the paper-exact estimator with load_config(..., estimator="shahmansoori_exact").
+estimator_profile: strong_classical

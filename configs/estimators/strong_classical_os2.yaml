@@ -1,0 +1,28 @@
+# Pareto point: strong classical v2.1 with a 2x dictionary (threshold factor calibrated at 2x: P_fa = 1e-3).
+name: strong_classical_os2
+estimator:
+  dictionary_oversampling: 2
+  dictionary_grid: centered
+  dictionary_normalize: true
+  aoa_branch: back
+  aod_branch: front
+  detection: dcs_somp_offgrid
+  pfa: 0.001
+  offgrid_threshold_factor: 18.0
+  num_paths: null
+  max_paths: 8
+  min_paths: 1
+  delay_method: periodogram
+  delay_oversampling: 16
+  sage_enabled: true
+  sage_max_iter: 20
+  sage_tol: 1.0e-07
+  exip_weighting: fim
+  los_selection: strongest
+  nlos_prune_level: 0.001
+  unknown_rule: chi2
+  unknown_test_level: 0.01
+  olos_alpha_step: 0.05
+  olos_alpha_max: 0.5
+  olos_pairs: all
+  olos_lma_top_k: null

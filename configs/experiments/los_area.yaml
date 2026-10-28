@@ -1,0 +1,5 @@
+# Fig. 2: MS uniformly in the rectangle (2,0)-(4,0.3); sweep G. Constant transmit power -> noise mode n0.
+extends: los.yaml
+name: paper_los_area
+scenario:
+  ue_position: {mode: uniform_box, low: [2.0, 0.0], high: [4.0, 0.3]}

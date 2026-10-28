@@ -1,0 +1,25 @@
+[project]
+name = "positioning"
+version = "0.1.0"
+description = "mmWave MIMO single-BS position/orientation estimation: physical system, classical baseline (Shahmansoori et al. 2018), bounds, datasets"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24", "scipy>=1.10", "pyyaml>=6", "matplotlib>=3.7"]
+
+[project.optional-dependencies]
+torch = ["torch>=2.0"]
+test = ["pytest>=7"]
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "tests"]
+testpaths = ["tests"]
+markers = [
+    "octave: requires the Octave parity fixture (scripts/02_reproduce_github.py)",
+    "slow: Monte-Carlo style tests",
+]

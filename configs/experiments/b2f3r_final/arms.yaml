@@ -1,0 +1,16 @@
+# Finalization arms (scripts/151_final_eval.py). kind fin: positioning.b2f3r_final.candidate.B2f3RFinal kwargs (defaults = frozen v3.1);
+# v31: B2f3Rv31 kwargs; v3: B2f3Rv3 kwargs (defaults = v2); v1; c: classical; a: retrained AI (G >= 16); kn: frozen B2f3 with exact N0 (labelled).
+v2:            {kind: v3, kwargs: {}}
+v3:            {kind: v3, kwargs: {hyps: [Hp, Hm], select: exip_pen, d4: true}}
+v31:           {kind: v31, kwargs: {gate: deterministic, recovery: combined, runtime: cached}}
+C1_modelorder: {kind: fin, kwargs: {relprune_rho: 15.0}}
+C2_budget:     {kind: fin, kwargs: {max_loc: 1}}
+C3_integrated: {kind: fin, kwargs: {relprune_rho: 15.0, max_loc: 2}}
+v1:            {kind: v1, kwargs: {noise: resid, lowg: A2b, geo: S1}}
+frozen:        {kind: kn, scale: 1.0}
+single_E2:     {kind: c, kwargs: {noise: E2}}
+strong_E2:     {kind: c, kwargs: {single: false, noise: E2}}
+direct_cnn:    {kind: a}
+lamp:          {kind: a}
+wu_3dcnn:      {kind: a}
+tiny_nn:       {kind: a}

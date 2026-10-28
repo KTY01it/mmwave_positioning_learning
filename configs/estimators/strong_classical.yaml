@@ -1,0 +1,30 @@
+# Strongest classical baseline built on the paper's chain. Deviations from the paper are listed with their finding
+# number (docs/P0_specification.md).
+name: strong_classical
+version: "2.2"          # FROZEN 2026-10-06. v2.2: + P_cat metric (d_cat = 1 m); v2.1: + optional proposals interface (unchanged behaviour); v2.0: 4x oversampled dictionary (F28); v1.1: + P2 protocol, P3 v1 — main baseline for every AI comparison; see docs/baseline_freeze.md
+estimator:
+  dictionary_oversampling: 4      # F28: 4x oversampled atoms for the coarse search (master plan P6 strong init)
+  dictionary_grid: centered
+  dictionary_normalize: true
+  aoa_branch: back                # F9
+  aod_branch: front
+  detection: dcs_somp_offgrid     # F17: off-grid atoms + cyclic refinement
+  pfa: 1.0e-3                     # threshold (41)
+  offgrid_threshold_factor: 18.0  # F23/F28: effective cells / (Nt Nr) of the noise-only max, calibrated at 4x
+  num_paths: null                 # K estimated
+  max_paths: 8
+  min_paths: 1                    # F22
+  delay_method: periodogram       # Eq. (54) solved on an oversampled FFT grid + Brent
+  delay_oversampling: 16
+  sage_enabled: true              # Eqs. (55)-(60)
+  sage_max_iter: 20
+  sage_tol: 1.0e-7
+  exip_weighting: fim             # W = J_eta in (63)/(64)
+  los_selection: strongest        # F21 (paper: min_delay)
+  nlos_prune_level: 1.0e-3        # F24 (paper: keep all paths)
+  unknown_rule: chi2              # F19 (paper: min_cost)
+  unknown_test_level: 0.01
+  olos_alpha_step: 0.05
+  olos_alpha_max: 0.5
+  olos_pairs: all                 # every path pair tried in (65)
+  olos_lma_top_k: null            # LMA for every alpha trial

@@ -1,0 +1,51 @@
+# Mirrors reference/5GPositioning/main.m exactly. Used ONLY to verify the Python port (Level-2 parity).
+# Do not use for paper experiments. See docs/P0_specification.md, Sec. 4.
+name: github_reference
+
+physics:
+  speed_of_light: 3.0e+8          # main.m: c = 300 m/us
+  fc: 60.0e+9                     # not present in main.m; irrelevant because the array is narrowband
+  bandwidth: 100.0e+6             # Rs = 100 MHz
+  num_subcarriers: 10             # N = 10
+  frequency_dependent_array: false  # getResponse.m: exp(-j*pi*sin(theta)*i), no lambda_n
+
+array:
+  num_tx: 32
+  num_rx: 32
+  spacing_wavelengths: 0.5
+  index_origin: zero              # getResponse.m: ii = 0:N-1
+
+beam:
+  num_beams: 20                   # Ns = 20
+  num_streams: 1
+  analog_frequency_flat: false    # F(:,k,n) drawn independently per subcarrier
+  normalize: false                # unit-modulus entries, ||F|| = sqrt(Nt)
+  symbols: ones                   # "we don't add data symbols, they are part of F"
+
+channel:
+  gain_model: constant
+  constant_gain: 10.0             # h = 10*ones(1,L); H += h*sqrt(Nr)*aR*sqrt(Nt)*aT'
+  gain_phase: zero
+
+scenario:
+  dimension: 2
+  bs_position: [0.0, 0.0]
+  condition: nlos                 # LOS + (L-1) scatterers
+  ue_position: {mode: fixed, value: [5.0, 1.0]}
+  orientation: {mode: fixed, value: 0.2}
+  scatterers: {mode: uniform_box, num: 3, low: [-10.0, -10.0], high: [10.0, 10.0]}  # SP=rand(L-1,2)*20-10
+
+noise:
+  mode: n0
+  n0: 0.01                        # sigma = 0.1 -> N0 = sigma^2
+
+estimator:
+  dictionary_oversampling: 2      # Nb = 2*Nt
+  dictionary_grid: github         # aa = 2*(-Nb/2:Nb/2-1)/Nb
+  dictionary_normalize: false     # Ut(:,m) = getResponse(...)*sqrt(Nt)
+  aoa_branch: back                # AOA_hat = pi*sign(asin(.)) - asin(.)
+  aod_branch: front
+  detection: dcs_somp
+  num_paths: 4                    # DCSSOMP(yb, Omega, L): fixed sparsity
+  delay_method: phase_slope       # -mean(diff(phase(h)))*N*Ts*c/(2*pi)
+  sage_enabled: false             # repo has no refinement

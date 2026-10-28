@@ -1,0 +1,8 @@
+# Figs. 6-8: LOS + one scatterer at s = [1.5, 0.4]
+extends: ../shahmansoori_paper.yaml
+name: paper_nlos
+scenario:
+  condition: nlos
+  scatterers: {mode: fixed, positions: [[1.5, 0.4]]}
+channel:
+  reflection_loss_random: false   # fixed-geometry figures: sigma_0^2 at its mean (-10 dB), F8

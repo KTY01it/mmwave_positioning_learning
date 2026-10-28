@@ -1,0 +1,38 @@
+# strong classical v2.0 + multi-start SAGE, selection restricted to the P3 v1 prior region (same prior an AI model learns).
+name: strong_classical_multistart_prior
+estimator:
+  dictionary_oversampling: 4
+  dictionary_grid: centered
+  dictionary_normalize: true
+  aoa_branch: back
+  aod_branch: front
+  detection: dcs_somp_offgrid
+  pfa: 0.001
+  offgrid_threshold_factor: 18.0
+  num_paths: null
+  max_paths: 8
+  min_paths: 1
+  delay_method: periodogram
+  delay_oversampling: 16
+  sage_enabled: true
+  sage_max_iter: 20
+  sage_tol: 1.0e-07
+  exip_weighting: fim
+  los_selection: strongest
+  nlos_prune_level: 0.001
+  unknown_rule: chi2
+  unknown_test_level: 0.01
+  olos_alpha_step: 0.05
+  olos_alpha_max: 0.5
+  olos_pairs: all
+  olos_lma_top_k: null
+  multistart: 4
+  prior_box:
+    p_low:
+    - 2.0
+    - 0.0
+    p_high:
+    - 4.0
+    - 0.3
+    alpha_max: 0.5
+    margin: 0.5

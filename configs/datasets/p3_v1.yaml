@@ -1,0 +1,79 @@
+# P3 dataset v1 (frozen with docs/evaluation_protocol.md). Changes vs p3_default.yaml:
+#  * scatterers restricted to the half-plane behind the MS array (F27: the ULA cannot tell theta from pi - theta);
+#    the unrestricted prior is kept as the OOD split test_ood_front;
+#  * SNR range extended to -35 dB (G0: the only accuracy headroom is the threshold region);
+#  * the number of beams G is an evaluation axis: every sample stores G = 32 beams, a method evaluated at G uses the
+#    first G of them (nested subsets, evaluation/benchmark.py); training may draw G at random.
+base_config: ../shahmansoori_paper.yaml
+dataset_version: 1
+
+_prior: &prior
+  scenario.ue_position: {mode: uniform_box, low: [2.0, 0.0], high: [4.0, 0.3]}
+  scenario.orientation: {mode: uniform, low: -0.5, high: 0.5}
+_los: &los
+  <<: *prior
+  scenario.condition: los
+  scenario.scatterers: {mode: none}
+_nlos: &nlos
+  <<: *prior
+  scenario.condition: nlos
+  scenario.scatterers: {mode: uniform_box, num: 1, num_max: 2, low: [1.0, 0.3], high: [3.5, 2.0], half_plane: back}
+_olos: &olos
+  <<: *prior
+  scenario.condition: olos
+  scenario.scatterers: {mode: uniform_box, num: 3, low: [1.0, 0.3], high: [3.5, 2.0], half_plane: back}
+_mixed: &mixed
+  - {overrides: *los, weight: 1}
+  - {overrides: *nlos, weight: 1}
+  - {overrides: *olos, weight: 1}
+
+splits:
+  - name: train
+    index: 11
+    num_samples: 1000000
+    stored: false
+    components: *mixed
+    snr: {mode: uniform, low: -35.0, high: 10.0}
+  - name: val
+    index: 12
+    num_samples: 2000
+    components: *mixed
+    snr: {mode: uniform, low: -35.0, high: 10.0}
+  - name: test_iid
+    index: 13
+    num_samples: 5000
+    components: *mixed
+    snr: {mode: uniform, low: -35.0, high: 10.0}
+  - name: test_fixed_geom             # P2.2 way 1: one NLOS geometry/beam set, Monte Carlo over noise
+    index: 14
+    num_samples: 2000
+    components: [{overrides: *nlos}]
+    fixed_seeds: {seed_geometry: 14000001, seed_gain: 14000001, seed_beam: 14000001}
+    snr: {mode: choice, values: [-35.0, -30.0, -25.0, -20.0, -15.0, -10.0, -5.0, 0.0, 5.0, 10.0]}
+  - name: test_ood_snr
+    index: 15
+    num_samples: 2000
+    components: *mixed
+    snr: {mode: choice, values: [-45.0, -40.0, 15.0, 20.0]}
+  - name: test_ood_K                  # training NLOS has 1-2 scatterers
+    index: 16
+    num_samples: 2000
+    components:
+      - overrides:
+          <<: *nlos
+          scenario.scatterers: {mode: uniform_box, num: 3, low: [1.0, 0.3], high: [3.5, 2.0], half_plane: back}
+    snr: {mode: uniform, low: -35.0, high: 10.0}
+  - name: test_ood_geom               # unseen MS area
+    index: 17
+    num_samples: 2000
+    components:
+      - overrides: {<<: *los, scenario.ue_position: {mode: uniform_box, low: [4.0, 0.3], high: [6.0, 1.0]}}
+      - overrides: {<<: *nlos, scenario.ue_position: {mode: uniform_box, low: [4.0, 0.3], high: [6.0, 1.0]}}
+    snr: {mode: uniform, low: -35.0, high: 10.0}
+  - name: test_ood_front              # F27 stress: scatterers anywhere in the box (front-half AoA possible)
+    index: 18
+    num_samples: 2000
+    components:
+      - overrides: {<<: *nlos, scenario.scatterers: {mode: uniform_box, num: 1, num_max: 2, low: [1.0, 0.3], high: [3.5, 2.0]}}
+      - overrides: {<<: *olos, scenario.scatterers: {mode: uniform_box, num: 3, low: [1.0, 0.3], high: [3.5, 2.0]}}
+    snr: {mode: uniform, low: -35.0, high: 10.0}

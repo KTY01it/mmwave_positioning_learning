@@ -1,0 +1,48 @@
+# V3 holdout (docs/v3_holdout_protocol.md): fresh seeds (split indices 40-42, never generated before the lock).
+# Same priors as p3_v2.yaml. OOD geometry: a FOURTH region, distinct from dev_v2_geom, v3_eval_geom and the sealed
+# test_v2_geom_new, outside the v1 and v2 training boxes:  x in [5.5, 7.0], y in [0.5, 1.0].
+base_config: ../shahmansoori_paper.yaml
+dataset_version: 3
+
+_prior: &prior
+  scenario.ue_position: {mode: uniform_box, low: [1.5, -0.6], high: [5.0, 0.9]}
+  scenario.orientation: {mode: uniform, low: -0.5, high: 0.5}
+_los: &los
+  <<: *prior
+  scenario.condition: los
+  scenario.scatterers: {mode: none}
+_nlos: &nlos
+  <<: *prior
+  scenario.condition: nlos
+  scenario.scatterers: {mode: uniform_box, num: 1, num_max: 2, low: [1.0, 0.3], high: [3.5, 2.0], half_plane: back}
+_olos: &olos
+  <<: *prior
+  scenario.condition: olos
+  scenario.scatterers: {mode: uniform_box, num: 3, low: [1.0, 0.3], high: [3.5, 2.0], half_plane: back}
+_geom: &geom {scenario.ue_position: {mode: uniform_box, low: [5.5, 0.5], high: [7.0, 1.0]}}
+
+splits:
+  - name: holdout_iid
+    index: 40
+    num_samples: 3000
+    components:
+      - {overrides: *los, weight: 1}
+      - {overrides: *nlos, weight: 1}
+      - {overrides: *olos, weight: 1}
+    snr: {mode: uniform, low: -10.0, high: 10.0}
+  - name: holdout_geom
+    index: 41
+    num_samples: 2000
+    components:
+      - {overrides: {<<: *los, <<: *geom}, weight: 1}
+      - {overrides: {<<: *nlos, <<: *geom}, weight: 1}
+      - {overrides: {<<: *olos, <<: *geom}, weight: 1}
+    snr: {mode: uniform, low: -10.0, high: 10.0}
+  - name: holdout_highsnr
+    index: 42
+    num_samples: 1500
+    components:
+      - {overrides: *los, weight: 1}
+      - {overrides: *nlos, weight: 1}
+      - {overrides: *olos, weight: 1}
+    snr: {mode: choice, values: [15.0, 20.0, 25.0]}

@@ -1,0 +1,29 @@
+# Paper-exact estimator (Shahmansoori et al. 2018, Sec. IV). Only choices the paper leaves open are filled in,
+# each marked [OPEN].
+name: shahmansoori_exact
+estimator:
+  dictionary_oversampling: 1      # U_Tx, U_Rx: Nt x Nt / Nr x Nr virtual-angle grid (31)
+  dictionary_grid: centered       # p = -(N-1)/2 ... (N-1)/2
+  dictionary_normalize: true      # unitary (Sec. IV-A)
+  aoa_branch: back                # [OPEN] ULA front/back ambiguity resolution (F9), as in main.m
+  aod_branch: front
+  detection: dcs_somp             # Algorithm 1 with grid atoms (42)-(48)
+  pfa: 1.0e-3                     # Sec. V-A, threshold (41)
+  offgrid_threshold_factor: 1.0   # unused by grid DCS-SOMP
+  num_paths: null                 # rank-blind: K estimated by the stopping rule
+  max_paths: 8                    # [OPEN] safety cap on the number of atoms
+  min_paths: 1                    # [OPEN] the paper reports estimates at every SNR
+  delay_method: periodogram       # Eq. (54): tau = argmax |a^H(tau) h|^2, gain from (53)
+  delay_oversampling: 16          # search grid for (54), refined continuously
+  sage_enabled: true              # Eqs. (55)-(60), Gauss-Seidel order theta_Tx, theta_Rx, tau, h
+  sage_max_iter: 20               # Figs. 3 and 6 show 20 iterations
+  sage_tol: 1.0e-7
+  exip_weighting: fim             # W = J_eta in (63)/(64)
+  los_selection: min_delay        # Sec. IV-D: LOS = smallest delay
+  nlos_prune_level: null          # keep every detected path
+  unknown_rule: min_cost          # Sec. IV-D: smaller of (63) and (64)
+  unknown_test_level: 0.01        # unused with min_cost
+  olos_alpha_step: 0.05           # Fig. 9: 0.01 and 0.05
+  olos_alpha_max: 0.5             # alpha_m = 0.5
+  olos_pairs: first_two           # [OPEN] (65) uses "two paths"; we take the two smallest delays
+  olos_lma_top_k: null            # LMA for every alpha trial

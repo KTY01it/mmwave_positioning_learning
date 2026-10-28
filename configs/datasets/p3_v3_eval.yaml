@@ -1,0 +1,41 @@
+# V3 evaluation splits (docs/v3_protocol.md): fresh data, never looked at, for the one-shot V2-A re-evaluation.
+# Same priors as p3_v2.yaml. The OOD region is a THIRD region, distinct from dev_v2_geom (used in development) and
+# from test_v2_geom_new (sealed blind test); all three lie outside the v1 / v2 training boxes.
+#   v3 eval OOD geometry: x in [5.5, 7.0], y in [-0.4, 0.4]
+base_config: ../shahmansoori_paper.yaml
+dataset_version: 3
+
+_prior: &prior
+  scenario.ue_position: {mode: uniform_box, low: [1.5, -0.6], high: [5.0, 0.9]}
+  scenario.orientation: {mode: uniform, low: -0.5, high: 0.5}
+_los: &los
+  <<: *prior
+  scenario.condition: los
+  scenario.scatterers: {mode: none}
+_nlos: &nlos
+  <<: *prior
+  scenario.condition: nlos
+  scenario.scatterers: {mode: uniform_box, num: 1, num_max: 2, low: [1.0, 0.3], high: [3.5, 2.0], half_plane: back}
+_olos: &olos
+  <<: *prior
+  scenario.condition: olos
+  scenario.scatterers: {mode: uniform_box, num: 3, low: [1.0, 0.3], high: [3.5, 2.0], half_plane: back}
+_geom: &geom {scenario.ue_position: {mode: uniform_box, low: [5.5, -0.4], high: [7.0, 0.4]}}
+
+splits:
+  - name: v3_eval_iid
+    index: 30
+    num_samples: 3000
+    components:
+      - {overrides: *los, weight: 1}
+      - {overrides: *nlos, weight: 1}
+      - {overrides: *olos, weight: 1}
+    snr: {mode: uniform, low: -10.0, high: 10.0}
+  - name: v3_eval_geom
+    index: 31
+    num_samples: 2000
+    components:
+      - {overrides: {<<: *los, <<: *geom}, weight: 1}
+      - {overrides: {<<: *nlos, <<: *geom}, weight: 1}
+      - {overrides: {<<: *olos, <<: *geom}, weight: 1}
+    snr: {mode: uniform, low: -10.0, high: 10.0}

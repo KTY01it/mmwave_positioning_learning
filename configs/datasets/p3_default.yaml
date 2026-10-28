@@ -1,0 +1,77 @@
+# SUPERSEDED by p3_v1.yaml (F27). Kept because docs/g0_report.md (random-geometry scenarios) was produced with it.
+# Master plan P3 — DRAFT priors (open decision #2: "chưa chốt"). Change here, never in code.
+# Each split owns the seed range [index*1e7, (index+1)*1e7); components are chosen per sample from the seed.
+base_config: ../shahmansoori_paper.yaml
+
+_prior: &prior
+  scenario.ue_position: {mode: uniform_box, low: [2.0, 0.0], high: [4.0, 0.3]}   # Fig. 2 area
+  scenario.orientation: {mode: uniform, low: -0.5, high: 0.5}                    # alpha_m of OLOS
+_los: &los
+  <<: *prior
+  scenario.condition: los
+  scenario.scatterers: {mode: none}
+_nlos: &nlos
+  <<: *prior
+  scenario.condition: nlos
+  scenario.scatterers: {mode: uniform_box, num: 1, num_max: 2, low: [1.0, 0.3], high: [3.5, 2.0]}
+_olos: &olos
+  <<: *prior
+  scenario.condition: olos
+  scenario.scatterers: {mode: uniform_box, num: 3, low: [1.0, 0.3], high: [3.5, 2.0]}
+
+_mixed: &mixed
+  - {overrides: *los, weight: 1}
+  - {overrides: *nlos, weight: 1}
+  - {overrides: *olos, weight: 1}
+
+splits:
+  - name: train
+    index: 1
+    num_samples: 1000000
+    stored: false                      # generated on the fly
+    components: *mixed
+    snr: {mode: uniform, low: -20.0, high: 10.0}
+  - name: val
+    index: 2
+    num_samples: 2000
+    components: *mixed
+    snr: {mode: uniform, low: -20.0, high: 10.0}
+  - name: test_iid
+    index: 3
+    num_samples: 5000
+    components: *mixed
+    snr: {mode: uniform, low: -20.0, high: 10.0}
+  - name: test_fixed_geom             # P2.2 way 1: geometry, gains, beams fixed; Monte Carlo over noise
+    index: 4
+    num_samples: 1800
+    components: [{overrides: *nlos}]
+    fixed_seeds: {seed_geometry: 4000001, seed_gain: 4000001, seed_beam: 4000001}
+    snr: {mode: choice, values: [-20.0, -15.0, -10.0, -5.0, 0.0, 5.0, 10.0, 15.0, 20.0]}
+  - name: test_ood_snr
+    index: 5
+    num_samples: 2000
+    components: *mixed
+    snr: {mode: choice, values: [-30.0, -25.0, 15.0, 20.0]}
+  - name: test_ood_K                  # train NLOS has 1-2 scatterers
+    index: 6
+    num_samples: 2000
+    components:
+      - overrides:
+          <<: *nlos
+          scenario.scatterers: {mode: uniform_box, num: 3, low: [1.0, 0.3], high: [3.5, 2.0]}
+    snr: {mode: uniform, low: -20.0, high: 10.0}
+  - name: test_ood_geom               # unseen MS area
+    index: 7
+    num_samples: 2000
+    components:
+      - overrides: {<<: *los, scenario.ue_position: {mode: uniform_box, low: [4.0, 0.3], high: [6.0, 1.0]}}
+      - overrides: {<<: *nlos, scenario.ue_position: {mode: uniform_box, low: [4.0, 0.3], high: [6.0, 1.0]}}
+    snr: {mode: uniform, low: -20.0, high: 10.0}
+  - name: test_ood_beam               # G differs from training
+    index: 8
+    num_samples: 2000
+    components:
+      - {overrides: {<<: *los, beam.num_beams: 16}}
+      - {overrides: {<<: *nlos, beam.num_beams: 16}}
+    snr: {mode: uniform, low: -20.0, high: 10.0}
+  # test_ood_impair (P10) is added when the receiver-impairment model exists.

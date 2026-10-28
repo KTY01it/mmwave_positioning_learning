@@ -1,0 +1,88 @@
+# P3 dataset v2 (docs/v2_protocol.md). New seed ranges (split indices 21-27, never used before).
+# Differences vs v1: wider training geometry; every split mixes LOS / NLOS / OLOS; a development OOD-geometry region
+# and a SEALED blind OOD-geometry region, both outside the v1 training box, the v1 OOD box and the v2 training box;
+# separate development and blind high-SNR splits. The test_v2_* splits are generated only after the v2 freeze.
+#
+#   v1 train box          x in [2.0, 4.0], y in [ 0.0, 0.3]
+#   v1 test_ood_geom      x in [4.0, 6.0], y in [ 0.3, 1.0]   (seen: development only)
+#   v2 train / val / iid  x in [1.5, 5.0], y in [-0.6, 0.9]
+#   v2 dev OOD geometry   x in [5.5, 7.0], y in [-1.2, -0.7]
+#   v2 BLIND OOD geometry x in [5.5, 7.0], y in [ 1.2,  1.8]
+base_config: ../shahmansoori_paper.yaml
+dataset_version: 2
+
+_prior: &prior
+  scenario.ue_position: {mode: uniform_box, low: [1.5, -0.6], high: [5.0, 0.9]}
+  scenario.orientation: {mode: uniform, low: -0.5, high: 0.5}
+_los: &los
+  <<: *prior
+  scenario.condition: los
+  scenario.scatterers: {mode: none}
+_nlos: &nlos
+  <<: *prior
+  scenario.condition: nlos
+  scenario.scatterers: {mode: uniform_box, num: 1, num_max: 2, low: [1.0, 0.3], high: [3.5, 2.0], half_plane: back}
+_olos: &olos
+  <<: *prior
+  scenario.condition: olos
+  scenario.scatterers: {mode: uniform_box, num: 3, low: [1.0, 0.3], high: [3.5, 2.0], half_plane: back}
+_mixed: &mixed
+  - {overrides: *los, weight: 1}
+  - {overrides: *nlos, weight: 1}
+  - {overrides: *olos, weight: 1}
+_dev_geom: &dev_geom {scenario.ue_position: {mode: uniform_box, low: [5.5, -1.2], high: [7.0, -0.7]}}
+_blind_geom: &blind_geom {scenario.ue_position: {mode: uniform_box, low: [5.5, 1.2], high: [7.0, 1.8]}}
+
+splits:
+  - name: train_v2
+    index: 21
+    num_samples: 1000000
+    stored: false
+    components: *mixed
+    snr: {mode: uniform, low: -35.0, high: 10.0}
+  - name: val_v2
+    index: 22
+    num_samples: 2000
+    components: *mixed
+    snr: {mode: uniform, low: -35.0, high: 10.0}
+  - name: dev_v2_geom                 # development OOD geometry (gate V2-B)
+    index: 23
+    num_samples: 1500
+    components:
+      - {overrides: {<<: *los, <<: *dev_geom}, weight: 1}
+      - {overrides: {<<: *nlos, <<: *dev_geom}, weight: 1}
+      - {overrides: {<<: *olos, <<: *dev_geom}, weight: 1}
+    snr: {mode: uniform, low: -10.0, high: 10.0}
+  - name: dev_v2_highsnr              # development high SNR (gate V2-C)
+    index: 24
+    num_samples: 1500
+    components: *mixed
+    snr: {mode: choice, values: [15.0, 20.0]}
+  - name: dev_v2_iid                  # Amendment 1: IID development split (val_v2 was used during V2-A development)
+    index: 28
+    num_samples: 2000
+    components: *mixed
+    snr: {mode: uniform, low: -35.0, high: 10.0}
+  - name: calib_v2                    # Amendment 1: replaces train_v2 seeds 900000-904999 (used by the 6A recipe)
+    index: 29
+    num_samples: 3000
+    components: *mixed
+    snr: {mode: uniform, low: -35.0, high: 10.0}
+  - name: test_v2_iid                 # SEALED until the v2 freeze
+    index: 25
+    num_samples: 5000
+    components: *mixed
+    snr: {mode: uniform, low: -35.0, high: 10.0}
+  - name: test_v2_geom_new            # SEALED blind OOD geometry
+    index: 26
+    num_samples: 2000
+    components:
+      - {overrides: {<<: *los, <<: *blind_geom}, weight: 1}
+      - {overrides: {<<: *nlos, <<: *blind_geom}, weight: 1}
+      - {overrides: {<<: *olos, <<: *blind_geom}, weight: 1}
+    snr: {mode: uniform, low: -10.0, high: 10.0}
+  - name: test_v2_highsnr_new         # SEALED blind high SNR
+    index: 27
+    num_samples: 2000
+    components: *mixed
+    snr: {mode: choice, values: [15.0, 20.0, 25.0]}

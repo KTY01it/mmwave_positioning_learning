@@ -1,0 +1,8 @@
+# Figs. 3-5: LOS only, p = [4, 0], alpha = 0.1
+extends: ../shahmansoori_paper.yaml
+name: paper_los
+scenario:
+  condition: los
+  scatterers: {mode: none}
+channel:
+  reflection_loss_random: false   # fixed-geometry figures: sigma_0^2 at its mean (-10 dB), F8

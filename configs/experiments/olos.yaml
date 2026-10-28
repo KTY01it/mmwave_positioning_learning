@@ -1,0 +1,10 @@
+# Fig. 9 / Table I: LOS blocked, three scatterers s_k = [1.5, 0.4 + 0.5 (k-1)]
+extends: ../shahmansoori_paper.yaml
+name: paper_olos
+scenario:
+  condition: olos
+  scatterers: {mode: fixed, positions: [[1.5, 0.4], [1.5, 0.9], [1.5, 1.4]]}
+estimator:
+  olos_alpha_step: 0.01
+channel:
+  reflection_loss_random: false   # fixed-geometry figures: sigma_0^2 at its mean (-10 dB), F8
